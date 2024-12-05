@@ -124,8 +124,28 @@ func main() {
 	collector.RegisterCollectors(reg)
 	logger.Logger.Info("Starting dmdb_exporter version " + Version)
 	logger.Logger.Info("Please visit: http://localhost" + config.GlobalConfig.ListenAddress + config.GlobalConfig.MetricPath)
+	
+	// 创建一个基本认证的中间件处理器
+	basicAuth := func(next http.Handler) http.Handler {
+		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			// 如果未配置用户名和密码，跳过认证
+			if config.GlobalConfig.BasicAuthUsername == "" && config.GlobalConfig.BasicAuthPassword == "" {
+				next.ServeHTTP(w, r)
+				return
+			}
+
+			user, pass, ok := r.BasicAuth()
+			if !ok || user != config.GlobalConfig.BasicAuthUsername || pass != config.GlobalConfig.BasicAuthPassword {
+				w.Header().Set("WWW-Authenticate", `Basic realm="Restricted"`)
+				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				return
+			}
+			next.ServeHTTP(w, r)
+		})
+	}
+
 	//设置metric路径
-	http.Handle(config.GlobalConfig.MetricPath, promhttp.HandlerFor(reg, promhttp.HandlerOpts{}))
+	http.Handle(config.GlobalConfig.MetricPath, basicAuth(promhttp.HandlerFor(reg, promhttp.HandlerOpts{})))
 	//配置引导页
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
 		w.Write(landingPage)
