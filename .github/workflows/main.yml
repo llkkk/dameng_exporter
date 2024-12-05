@@ -1,0 +1,66 @@
+name: Golang CI/CD Pipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        goos: [linux]
+        goarch: [amd64, arm64]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.12'
+
+      - name: Build binary
+        run: |
+          mkdir -p output
+          GOOS=${{ matrix.goos }} GOARCH=${{ matrix.goarch }} go build -o output/dameng_exporter_v1.0.6_linux_${{ matrix.goarch }} dameng_exporter.go
+
+      - name: Package binary and config files
+        run: |
+          mkdir -p package
+          cp output/dameng_exporter_v1.0.6_linux_${{ matrix.goarch }} package/
+          cp custom_metrics.toml package/
+          cp dameng_exporter.config package/
+          tar -czvf dameng_exporter_v1.0.6_linux_${{ matrix.goarch }}.tar.gz -C package .
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v2
+        with:
+          name: dameng_exporter_v1.0.6_linux_${{ matrix.goarch }}.tar.gz
+          path: dameng_exporter_v1.0.6_linux_${{ matrix.goarch }}.tar.gz
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dameng_exporter_v1.0.6_linux_amd64.tar.gz
+          path: output
+
+      - name: Download build artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: dameng_exporter_v1.0.6_linux_arm64.tar.gz
+          path: output
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            output/dameng_exporter_v1.0.6_linux_amd64.tar.gz
+            output/dameng_exporter_v1.0.6_linux_arm64.tar.gz
+          tag_name: 'v1.0.6'
+          generate_release_notes: true
