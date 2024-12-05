@@ -14,10 +14,10 @@ jobs:
         goarch: [amd64, arm64]
     steps:
       - name: Checkout code
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Set up Go
-        uses: actions/setup-go@v2
+        uses: actions/setup-go@v3
         with:
           go-version: '1.12'
 
@@ -35,7 +35,7 @@ jobs:
           tar -czvf dameng_exporter_v1.0.6_linux_${{ matrix.goarch }}.tar.gz -C package .
 
       - name: Upload build artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: dameng_exporter_v1.0.6_linux_${{ matrix.goarch }}.tar.gz
           path: dameng_exporter_v1.0.6_linux_${{ matrix.goarch }}.tar.gz
@@ -45,13 +45,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download build artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dameng_exporter_v1.0.6_linux_amd64.tar.gz
           path: output
 
       - name: Download build artifacts
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: dameng_exporter_v1.0.6_linux_arm64.tar.gz
           path: output
