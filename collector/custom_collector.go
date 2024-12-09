@@ -118,14 +118,12 @@ func (cm *CustomMetrics) Collect(ch chan<- prometheus.Metric) {
 					logger.Logger.Debugf("metric %s value %v labelValues %v", field, conver_float, labelValues)
 				}
 			}
-
 		}
+	}
 
-		// 手动调用 Prometheus 的 Collect 方法来注册所有已更新的 metrics
-		for _, collector := range cm.metrics {
-			collector.Collect(ch)
-		}
-
+	// 手动调用 Prometheus 的 Collect 方法来注册所有已更新的 metrics
+	for _, collector := range cm.metrics {
+		collector.Collect(ch)
 	}
 }
 
