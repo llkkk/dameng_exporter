@@ -33,7 +33,7 @@ jobs:
           tar -czvf output/dameng_exporter_v1.0.7_linux_arm64.tar.gz -C output dameng_exporter_linux_arm64 dameng_exporter.config custom_metrics.toml
 
       - name: Upload Artifact
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: BUILD_ARTIFACT
           path: output/
