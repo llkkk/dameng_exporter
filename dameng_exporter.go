@@ -185,7 +185,8 @@ func execEncryptPwdCmd(encryptPwd *string) bool {
 func buildDSN(user, password, host string) string {
 	//dsn := "dm://SYSDBA:SYSDBA@120.53.103.235:5236?autoCommit=true"
 	escapedPwd, _ := config.DecryptPassword(password)
-	return fmt.Sprintf("dm://%s:%s@%s?autoCommit=true", user, escapedPwd, host)
+	formattedPwd := fmt.Sprintf("'%s'", fmt.Sprintf(`"%s"`, escapedPwd))
+	return fmt.Sprintf("dm://%s/%s@%s?autoCommit=true", user, formattedPwd, host)
 }
 
 func fileExists(filename string) bool {
