@@ -1,0 +1,60 @@
+name: MasterPipeline
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  compile:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Set up Go
+        uses: actions/setup-go@v2
+        with:
+          go-version: '1.16'
+
+      - name: Build Golang for Linux AMD64
+        run: |
+          mkdir -p output
+          GOOS=linux GOARCH=amd64 go build -o output/dameng_exporter_linux_amd64 main.go
+          cp dameng_exporter.config output/
+          cp custom_metrics.toml output/
+          tar -czvf output/dameng_exporter_v1.0.7_linux_amd64.tar.gz -C output dameng_exporter_linux_amd64 dameng_exporter.config custom_metrics.toml
+
+      - name: Build Golang for Linux ARM64
+        run: |
+          GOOS=linux GOARCH=arm64 go build -o output/dameng_exporter_linux_arm64 main.go
+          cp dameng_exporter.config output/
+          cp custom_metrics.toml output/
+          tar -czvf output/dameng_exporter_v1.0.7_linux_arm64.tar.gz -C output dameng_exporter_linux_arm64 dameng_exporter.config custom_metrics.toml
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: BUILD_ARTIFACT
+          path: output/
+
+  release:
+    runs-on: ubuntu-latest
+    needs: compile
+    steps:
+      - name: Download Artifact
+        uses: actions/download-artifact@v2
+        with:
+          name: BUILD_ARTIFACT
+          path: output/
+
+      - name: Publish Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v1.0.7
+          files: |
+            output/dameng_exporter_v1.0.7_linux_amd64.tar.gz
+            output/dameng_exporter_v1.0.7_linux_arm64.tar.gz
+          generate_release_notes: true
+          draft: false
+          prerelease: false
