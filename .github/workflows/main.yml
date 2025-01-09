@@ -15,19 +15,19 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v4
         with:
-          go-version: '1.21'
+          go-version: '1.21'  # 使用你的 Go 版本
 
       - name: Build Golang for Linux AMD64
         run: |
           mkdir -p output
-          GOOS=linux GOARCH=amd64 go build -o output/dameng_exporter_linux_amd64 main.go
+          GOOS=linux GOARCH=amd64 go build -o output/dameng_exporter_linux_amd64 dameng_exporter.go
           cp dameng_exporter.config output/
           cp custom_metrics.toml output/
           tar -czvf output/dameng_exporter_v1.0.7_linux_amd64.tar.gz -C output dameng_exporter_linux_amd64 dameng_exporter.config custom_metrics.toml
 
       - name: Build Golang for Linux ARM64
         run: |
-          GOOS=linux GOARCH=arm64 go build -o output/dameng_exporter_linux_arm64 main.go
+          GOOS=linux GOARCH=arm64 go build -o output/dameng_exporter_linux_arm64 dameng_exporter.go
           cp dameng_exporter.config output/
           cp custom_metrics.toml output/
           tar -czvf output/dameng_exporter_v1.0.7_linux_arm64.tar.gz -C output dameng_exporter_linux_arm64 dameng_exporter.config custom_metrics.toml
